@@ -7,6 +7,7 @@ from dataclasses import dataclass #, field
 
 # import inspect
 import functools
+import time
 
 
 # @dataclass
@@ -161,6 +162,14 @@ class Stage:
         )
 
 
+@dataclass
+class StageRun:
+    stage: Stage
+    inputs: Any
+    outputs: Any
+    runtime: float
+
+
 class Pipeline:
     def __init__(
         self, 
@@ -174,6 +183,9 @@ class Pipeline:
         for stage in stages:
             self._dict[stage.name] = stage
         self.name = name if name is not None else ""
+        self._run_inputs = []
+        self._run_outputs = []
+        self._stages_run: list[StageRun] = []
         # self.progress = progress
         # self.progress_multiline = progress_multiline
         # self.progress_reset_elapsed = progress_reset_elapsed
@@ -186,20 +198,23 @@ class Pipeline:
     def names(self) -> tuple[str, ...]:
         return tuple(self._dict.keys())
 
-    @property
-    def num_stages(self) -> int:
+    def __len__(self) -> int:
         return len(self.stages)
 
-    def __getitem__(self, key: int | str) -> Stage:
+    def _validate_key(self, key: int | str) -> None:
         if isinstance(key, int):
-            if key >= self.num_stages:
+            if key >= len(self):
                 raise KeyError(
-                    f"Cannot access stage {key} as only {self.num_stages} "
+                    f"Cannot access stage {key} as only {len(self)} "
                     "are registered"
                 )
-            return self._dict[self.names[key]]
-        if key not in self._dict:
+        elif key not in self._dict:
             raise KeyError(f"Cannot access stage {key}")
+
+    def __getitem__(self, key: int | str) -> Stage:
+        self._validate_key(key)
+        if isinstance(key, int):
+            return self._dict[self.names[key]]
         return self._dict[key]
 
     def _run_stage(
@@ -210,7 +225,26 @@ class Pipeline:
         **kwargs
     ) -> tuple:
         try:
+            if stage_idx == 0:
+                self._run_inputs.insert(stage_idx, (args, kwargs))
+            else:
+                self._run_inputs.insert(stage_idx, args)
+
+            t1 = time.perf_counter_ns()
             res = stage(*args, **kwargs)
+            t2 = time.perf_counter_ns()
+
+            self._run_outputs.insert(stage_idx, res)
+            self._stages_run.insert(
+                stage_idx,
+                StageRun(
+                    stage,
+                    inputs=self._run_inputs[stage_idx],
+                    outputs=self._run_outputs[stage_idx],
+                    runtime=t2-t1,
+                )
+            )
+
         except TypeError as e:
             e.add_note(f"--> Error at stage#{stage_idx}({stage.name})")
             raise e
@@ -219,19 +253,26 @@ class Pipeline:
         elif not isinstance(res, tuple):
             res = (res, )
         return res
-            
 
     def __call__(self, *args, **kwargs) -> Any:
-        if self.num_stages == 0:
+        self._run_inputs = []
+        self._run_outputs = []
+        self._stages_run = []
+        if len(self) == 0:
             return None
 
-        next_args = self._run_stage(self.stages[0], 1, *args, **kwargs)
-        for idx, stage in enumerate(self.stages[1:], start=2):
+        next_args = self._run_stage(self.stages[0], 0, *args, **kwargs)
+        for idx, stage in enumerate(self.stages[1:], start=1):
             next_args = self._run_stage(stage, idx, *next_args)
 
         if len(next_args) == 1:
             return next_args[0]
         return next_args
+
+    @property
+    def stages_run(self) -> list[StageRun]:
+        return self._stages_run
+
 
 
 def make_pipeline(
