@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Callable, Any
+from typing import Callable, Any, overload, Sequence
 
 from collections import OrderedDict
 from dataclasses import dataclass #, field
@@ -269,9 +269,23 @@ class Pipeline:
             return next_args[0]
         return next_args
 
-    @property
-    def stages_run(self) -> list[StageRun]:
-        return self._stages_run
+    
+    @overload
+    def get_stages_run(self, *keys: int) -> list[StageRun]:
+        ...
+
+    @overload
+    def get_stages_run(self, *keys: str) -> list[StageRun]:
+        ...
+
+    def get_stages_run(self, *keys):
+        data = []
+        for key in keys:
+            self._validate_key(key)
+            if isinstance(key, str):
+                key = self.names.index(key)
+            data.append(self._stages_run[key])
+        return data
 
 
 

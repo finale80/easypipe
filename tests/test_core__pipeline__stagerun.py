@@ -54,12 +54,12 @@ def test_input_output(
     )
     p(*args, **kwargs)
 
-    run = p.stages_run[0]
+    run = p.get_stages_run(0)[0]
     assert run.inputs == (args, kwargs)
     assert run.outputs == expected_outputs[0]
     for run, prev_run, exp_out in zip(
-        p.stages_run[1:], 
-        p.stages_run,
+        p.get_stages_run(*list(range(1, len(p)))),
+        p.get_stages_run(*list(range(0, len(p)))),
         expected_outputs[1:]
     ):
         assert run.outputs == exp_out 
