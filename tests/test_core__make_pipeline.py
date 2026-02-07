@@ -7,8 +7,10 @@ import functools
 
 from easypipe import make_pipeline
 
+
 def func_sum(a, b=0):
     return a+b
+
 
 @pytest.mark.parametrize(
     ", ".join([
