@@ -1,133 +1,12 @@
 from __future__ import annotations
 
-from typing import Callable, Any, overload, Iterator, Self, cast
+from typing import Callable, Any, overload, Self, cast
 
 from collections import OrderedDict, Counter, defaultdict
-from dataclasses import dataclass #, field
+from dataclasses import dataclass
 
-# import inspect
 import functools
 import time
-
-
-# @dataclass
-# class StageSignature:
-#     """
-#     Helper class to introspect a function signature
-#     """
-#     func: Callable
-#     names: list[str] = field(default_factory=list)
-#     by_pos: list[str] = field(default_factory=list)
-#     by_key: list[str] = field(default_factory=list)
-#     by_pos_or_key: list[str] = field(default_factory=list)
-#     by_pos_with_default: list[str] = field(default_factory=list)
-#     by_key_with_default: list[str] = field(default_factory=list)
-#     by_pos_or_key_with_default: list[str] = field(default_factory=list)
-#     has_var_pos: bool = False
-#     has_var_keys: bool = False
-#
-#     def __post_init__(self):
-#         self._sig = inspect.signature(self.func)
-#
-#         for param_name, param_data in self._sig.parameters.items():
-#             self.names.append(param_name)
-#             has_default = param_data.default != inspect.Parameter.empty
-#
-#             match param_data.kind:
-#                 case inspect.Parameter.POSITIONAL_ONLY:
-#                     self.by_pos.append(param_name)
-#                     if has_default:
-#                         self.by_pos_with_default.append(param_name)
-#                 case inspect.Parameter.POSITIONAL_OR_KEYWORD:
-#                     self.by_pos_or_key.append(param_name)
-#                     if has_default:
-#                         self.by_pos_or_key_with_default.append(param_name)
-#                 case inspect.Parameter.VAR_POSITIONAL:
-#                     self.has_var_pos = True
-#                 case inspect.Parameter.VAR_KEYWORD:
-#                     self.has_var_keys = True
-#                 case _:
-#                     self.by_key.append(param_name)
-#                     if param_data.default != inspect.Parameter.empty:
-#                         self.by_key_with_default.append(param_name)
-#
-#     # @property
-#     # def num_params(self) -> int:
-#     #     return (
-#     #         self.num_params_by_pos
-#     #         + self.num_params_by_key
-#     #         + self.num_params_by_pos_or_key
-#     #     )
-#     #
-#     # @property
-#     # def min_params(self) -> int:
-#     #     return (
-#     #         self.num_params
-#     #         - len(self.by_pos_with_default)
-#     #         - len(self.by_key_with_default)
-#     #         - len(self.by_pos_or_key_with_default)
-#     #     )
-#     #
-#     # @property
-#     # def num_params_by_pos(self) -> int:
-#     #     return len(self.by_pos)
-#     #
-#     # @property
-#     # def num_params_by_key(self) -> int:
-#     #     return len(self.by_key)
-#     #
-#     # @property
-#     # def num_params_by_pos_or_key(self) -> int:
-#     #     return len(self.by_pos_or_key)
-#     #
-#     # # @property
-#     # # def num_only_positional_params_with_default(self) -> int:
-#     # #     return len(self.by_pos_with_default)
-#    
-#     def validate_call_input(self, *args, **kwargs) -> None:
-#         n_args = len(args)
-#
-#         n_by_pos = len(self.by_pos)
-#         n_by_pos_def = len(self.by_pos_with_default)
-#         n_by_pos_key = len(self.by_pos_or_key)
-#         n_by_pos_key_def = len(self.by_pos_or_key_with_default)
-#         n_remaining_args = n_args
-#
-#         if n_by_pos > 0:
-#             expected = n_by_pos - n_by_pos_def
-#             if n_args < expected:
-#                 raise RuntimeError(f"{expected - n_args} missing args by position")
-#             n_remaining_args -= expected
-#
-#         if (
-#             n_remaining_args > n_by_pos_key
-#             and not self.has_var_pos
-#         ):
-#             raise RuntimeError(f"{n_remaining_args} extra args by position")
-#
-#         expected = n_by_pos_key - n_by_pos_key_def
-#         if n_remaining_args < expected:
-#             raise RuntimeError("{expected} missing args by position or key")
-#
-#         valid_keys = (
-#             set(
-#                 (self.by_pos_or_key + self.by_key)
-#                 [n_remaining_args:]
-#             )
-#         )
-#         expected_keys = (
-#             valid_keys
-#             - set(self.by_pos_or_key_with_default)
-#             - set(self.by_key_with_default)
-#         )
-#         keys = set(kwargs.keys())
-#         missing = expected_keys - keys
-#         if len(missing) > 0:
-#             raise RuntimeError("{len(missing) missing args by key}")
-#
-#         extra = keys - valid_keys
-#         if len(extra) > 0:
-#             raise RuntimeError(f"{len(extra)} extra args by key")
 
 
 @dataclass
@@ -193,9 +72,6 @@ class Pipeline:
         self, 
         *stages: Stage,
         name: str | None = None,
-        # with_progress: bool = True,
-        # progress_multiline: bool = True,
-        # progress_reset_elapsed: bool = True,
     ):
         # if a name is duplicated, then add a suffix _<num> to the name
         dupnames = Counter([stage.name for stage in stages])
@@ -211,9 +87,6 @@ class Pipeline:
         self._run_inputs = []
         self._run_outputs = []
         self._stages_run: list[StageRun] = []
-        # self.progress = progress
-        # self.progress_multiline = progress_multiline
-        # self.progress_reset_elapsed = progress_reset_elapsed
 
     @property
     def stages(self) -> tuple[Stage, ...]:
@@ -227,7 +100,7 @@ class Pipeline:
         return len(self.stages)
 
     def __getitem__(self, key: int | str) -> Stage:
-        key = self._convert_key_to_str(key)
+        key = cast(str, self._convert_key_to_str(key))
         return self._dict[key]
 
     def __iter__(self) -> Self:
@@ -312,7 +185,7 @@ class Pipeline:
             return None
 
         if stop_at is not None:
-            stop_at = self._convert_key_to_int(stop_at)
+            stop_at = cast(int, self._convert_key_to_int(stop_at))
             if idx >= stop_at:
                 return None
         else:
