@@ -1,10 +1,10 @@
 import pytest
 
-from easypipe import Stage, Pipeline
+from easypipeline import Stage, Pipeline
 
 from typing import Callable, Any, Sequence
 
-from easypipe.core import make_pipeline
+from easypipeline.core import make_pipeline
 
 def func_sum(a: float, b: float = 1.0) -> float:
     return a+b

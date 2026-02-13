@@ -2,7 +2,7 @@ import pytest
 
 from typing import Callable
 
-from easypipe import make_pipeline
+from easypipeline import make_pipeline
 
 def func_sum(a: float, b: float = 1.0) -> float:
     return a+b

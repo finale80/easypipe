@@ -1,5 +1,5 @@
 [project]
-name = "easypipe"
+name = "easypipeline"
 version = "0.0.2b1"
 description = "Chaining functions execution made easy"
 readme = "README.md"

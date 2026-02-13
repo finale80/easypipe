@@ -2,7 +2,7 @@ import pytest
 
 from typing import Callable, Any
 
-from easypipe import Stage
+from easypipeline import Stage
 
 def func_sum(a: int, b: int = 0) -> int:
     return a+b
