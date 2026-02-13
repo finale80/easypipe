@@ -1,12 +1,12 @@
 [project]
-name = "easypipeline"
+name = "enpipe"
 version = "0.0.2b1"
 description = "Chaining functions execution made easy"
 readme = "README.md"
 authors = [
     { name = "Alessandro Finamore", email = "mail@afinamore.io" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = []
 
 [build-system]

@@ -1,7 +1,7 @@
-# easypipeline: Chaining functions execution made easy
+# enpipe: Chaining functions execution made easy
 
 ```
-from easypipeline import make_pipeline
+from enpipe import make_pipeline
 from math import sqrt
 
 def operation(n1: float, n2: float) -> float:

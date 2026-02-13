@@ -1,7 +1,7 @@
 import pytest
 import functools
 
-from easypipeline import Stage, Pipeline
+from enpipe import Stage, Pipeline
 
 from typing import Callable, Any
 

@@ -6,7 +6,7 @@ import functools
 from typing import Callable, Sequence
 from functools import partial
 
-from easypipeline import Stage, Pipeline
+from enpipe import Stage, Pipeline
 
 
 def func_sum(a: float, b: float = 1.0) -> float:

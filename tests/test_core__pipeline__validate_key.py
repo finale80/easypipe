@@ -2,7 +2,7 @@ import pytest
 
 from typing import Callable, Sequence
 
-from easypipeline import make_pipeline
+from enpipe import make_pipeline
 
 def func_sum(a, b=1):
     return a+b

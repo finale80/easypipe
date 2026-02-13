@@ -5,7 +5,7 @@ from typing import Callable, Any, Sequence
 import pytest
 import functools
 
-from easypipeline import make_pipeline
+from enpipe import make_pipeline
 
 
 def func_sum(a, b=0):
